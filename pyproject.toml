@@ -1,0 +1,15 @@
+[project]
+name = "climate"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dotenv>=0.9.9",
+    "langchain-groq>=0.3.4",
+    "langchain-tavily>=0.2.4",
+    "langchain[google-genai]>=0.3.26",
+    "langgraph>=0.4.10",
+    "pandas>=2.3.0",
+    "plotly>=6.2.0",
+]
