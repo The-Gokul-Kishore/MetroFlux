@@ -1,5 +1,6 @@
-
 import json
+
+
 class JsonExtractor:
     def extract_field(self, data, field):
         try:
@@ -17,5 +18,6 @@ class JsonExtractor:
             except json.JSONDecodeError as e:
                 raise Exception(f"Invalid JSON format: {e}")
 
-        raise Exception("JSON block not found. Expected: ```json ... ```")
-
+        raise Exception(
+            "JSON block not found. Expected to wrap output in: ```json ... ```"
+        )

@@ -1,0 +1,132 @@
+
+/* 🧭 Layout & Theme */
+body {
+    overflow: hidden;
+
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: #f8f4e8; /* soft weathered cream */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  color: #3d3d3d;
+}
+
+/* 📦 Chat UI */
+.chat-container {
+  width: 90vw;
+  max-width: 900px;
+  height: calc(100vh - 4rem); 
+  margin: auto;
+  padding: 2rem;
+  background: #f8f4e8; /* same as body */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0dbcc;
+}
+
+/* 🏷️ Title */
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #5a5a5a;
+}
+
+/* 💬 Chat Area */
+.chat-box {
+  flex-grow: 1;
+  border: 1px solid #d8d2c3;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #fefcf7;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+/* 🗨️ Messages */
+.message {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  max-width: 80%;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.message.user {
+  background-color: #fff4cc; /* soft warm yellow */
+  align-self: flex-end;
+  margin-left: auto;
+  text-align: right;
+  border: 1px solid #f0d987;
+}
+
+.message.bot {
+  background-color: #e8e8e8;
+  align-self: flex-start;
+  margin-right: auto;
+  border: 1px solid #d2d2d2;
+}
+.graph-container {
+  margin-top: 1rem;
+  height: 400px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ✏️ Input Bar */
+.input-area {
+  display: flex;
+  gap: 1rem;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.1rem;
+  color:#3d3d3d;
+  border: 1px solid #cfc5b5;
+  border-radius: 8px;
+  background-color: #fffaf0;
+  transition: border 0.2s;
+}
+
+.input-area input:focus {
+  outline: none;
+  border-color: #d9aa00;
+}
+
+.input-area button {
+  padding: 1rem 2rem;
+  background-color: #d9aa00;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.input-area button:hover {
+  background-color: #b48e00;
+}
+
+/* 📊 Graph Viewer */
+.graph-area {
+  margin-top: 2rem;
+  background-color: #fffdf4;
+  border: 1px solid #d6cbb4;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}

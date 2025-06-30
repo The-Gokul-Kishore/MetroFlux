@@ -2,7 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chat_models.base import BaseChatModel
 from metroflux.services.agent_services.agent_schemas import GraphResponse
 from metroflux.services.code_executor import CodeExecutor
-from metroflux.services.agent_services.agent_schemas import AgentState
+
 class GraphAgent:
     def __init__(self, model: BaseChatModel) -> None:
         self.model = model.with_structured_output(GraphResponse)
@@ -19,27 +19,27 @@ class GraphAgent:
         Your code must produce a figure stored in a variable named `fig`.
         """,
                 ),
-                (
-                    "user",
-                    """ Visualize the weather data using the following instructions:
+                ("user", """Visualize the weather data using the following instructions:
 
-        {instructions}
+                {instructions}
 
-        Constraints:
-        - You may use pandas *only for data transformation* if necessary.
-        - The final visualization must use only Plotly (px or go (already imported)).
-        - Store the final plot in a variable called `fig`.
-        - The `fig` must be JSON-serializable using `pio.to_json(fig)`.
-        - Do not include file saving or display (`.show()`) in your output.
-        - Output only Python code — no explanations or markdown.
-            """,
-                ),
+                Constraints:
+                - The final visualization must use only Plotly.
+                - Store the final plot in a variable called `fig`.
+                - The `fig` must be JSON-serializable using `pio.to_json(fig)`.
+                - Do not include file saving or display (`.show()`) in your output.
+                - Output only Python code — no explanations or markdown.
+                """)
+                ,
             ]
         )
         return prompt_template
 
     def exec_and_validate(self, code):
         try:
+            if code.startswith('"""') and code.endswith('"""'):
+                code = code[3:-3].strip()
+
             if "fig" not in code:
                 raise Exception("fig not found in code")
             local_vars = self.code_executor.exec_code(code)
@@ -52,30 +52,36 @@ class GraphAgent:
             print("Error in validating code:", e)
             raise e
 
-    def invoke(self, state: AgentState):
+    def invoke(self,instructions: str,retry_cnt:int=3)->str:
         """the graph generation agent which produces the graph based on the instructions provided
 
         Args:
-            state (AgentState): the state of the graph
-        """
-        instructions = state.graph_instructions
-        error_notes = ""
+            instructions (str): instructions to generate the graph
+            retry_cnt (int, optional): number of retries. Defaults to 3.
 
-        for i in range(state.retry_count + 1):
+        Returns:
+            str:plotly graph json
+        """
+        instructions = instructions
+        error_notes = ""
+        print("graph agent invoked with :\n", instructions, "\n\n")
+        for i in range( retry_cnt+ 1):
             try:
+                
                 full_instructions = instructions
                 if error_notes:
                     full_instructions += f"\nNote: the last attempt failed with this error:\n{error_notes}"
 
                 prompt = self.prompt_template.format(instructions=full_instructions)
                 output = self.model.invoke(prompt)
+                print("Graph Code:\n", output.graph_code, "\n\n")
                 graph = self.exec_and_validate(output.graph_code)
-                state.graph_json = graph
+                graph_json = graph
                 break
             except Exception as e:
                 error_notes = str(e)[:500]
-                state.graph_json = """{"error": "error in generating graph"}"""
+                graph_json = """{"error": "error in generating graph"}"""
                 print("Error in generating graph:", e)
                 print("Retrying...")
-        return state
+        return graph_json
 
