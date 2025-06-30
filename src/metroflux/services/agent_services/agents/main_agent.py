@@ -1,4 +1,5 @@
 from typing import List
+from pydantic import BaseModel
 
 from langchain.chat_models.base import BaseChatModel
 from langchain_core.messages.utils import count_tokens_approximately, trim_messages
@@ -7,13 +8,20 @@ from langchain_core.tools import Tool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
-from metroflux.services.agent_services.agent_schemas import (
-    AgentState,
-    RouterResponse,
-    SummarizerResponse,
-    DateResponse
-)
 from metroflux.services.json_extractor import JsonExtractor
+
+class AgentState(BaseModel):
+    route: str
+    corrdinates: List[int]
+    location_based: bool
+    data: str
+    user_query: str
+    is_graph_needed: bool
+    graph_instructions: str
+    graph_json: str
+    output_text: str
+    retry_count: int
+
 
 
 def pre_model_hook(self, state):
@@ -27,129 +35,6 @@ def pre_model_hook(self, state):
         include_system=True,
     )
     return {"llm_input_messages": trimmed}
-
-
-class RouterAgent:
-    def __init__(
-        self,
-        model: BaseChatModel,
-    ):
-        self.model = model.with_structured_output(RouterResponse)
-        self.prompt_template = self._get_prompt_template()
-
-    def _get_prompt_template(self):
-        prompt_template = ChatPromptTemplate(
-            [
-                ("system", "You are a weather assistant router agent .\n"),
-                (
-                    "user",
-                    """User query: {user_query}
-
-                    Available routing options:
-                    {tool_descriptions}
-
-                    Decide the best route:
-                    - Choose the appropriate tool based on the query.
-                    - If it's not weather-related, route to "general".
-                    - Set `location_based` to True if the query requires geographic location (like a city name), else False.
-                    """,
-                ),
-            ]
-        )
-        return prompt_template
-
-    def invoke(self, user_query:str,tools:List[Tool]) -> RouterResponse:
-        print("router invoked")
-        tool_descriptions = "\n".join(
-            [f"- {tool.name}: {tool.description}" for tool in tools]
-        )
-
-        prompt = self.prompt_template.invoke(
-            {"user_query": user_query, "tool_descriptions": tool_descriptions}
-        )
-        output = self.model.invoke(prompt)
-        print("Router Response:\n", output, "\n\n")
-        return output
-class DateAgent:
-    def __init__(
-        self,
-        model: BaseChatModel,
-    ):
-        self.model = model.with_structured_output(DateResponse)
-    
-        self.prompt_template = self._get_prompt_template()
-    def _get_prompt_template(self):
-        prompt_template = ChatPromptTemplate(
-            [
-                (
-                    "system",
-                    """you are a weather assistant's date resolver give correct date ranges for the query"""
-                    ),
-                (
-                    "user",
-                    """User query: {user_query}
-                        current_date is {current_date}
-                        based on the current date and user query return date ranges
-
-                    """
-                )
-                                        
-            ]
-        )
-        return prompt_template
-    def invoke(self, user_query:str,current_date:str) -> DateResponse:
-        print("date resolver invoked")
-        prompt = self.prompt_template.invoke(
-            {"user_query": user_query, "current_date": current_date}
-        )
-        output = self.model.invoke(prompt)
-        print("Date Response:\n", output, "\n\n")
-        return output
-
-
-class SummarizerAgent:
-    def __init__(
-        self,
-        model: BaseChatModel,
-    ):
-        self.model = model.with_structured_output(SummarizerResponse)
-        self.propmt_template = self._get_prompt_template()
-
-    def _get_prompt_template(self):
-        prompt_template = ChatPromptTemplate(
-            [
-                (
-                    "system",
-                    "You are a weather assistant summarizer agent use data to address user query and also graph if needed.\n"
-                    "- Use the provided weather data to answer the user's query.\n",
-                ),
-                (
-                    "user",
-                    """User query: {user_query}
-
-                    Given the following weather data:
-
-                    {data}
-
-                    Do the following:
-                    1. Summarize the weather data to address the user's query.
-                    2. Set `is_graph_needed` to true if the query involves trends, forecasts, or time series data.
-                    3. If a graph is needed, include `graph_instructions` using this format:
-                    "Line chart with date on x-axis, temperature (°C) on y-axis. Data: [...]. Use blue color for the line."
-                    """,
-                ),
-            ]
-        )
-        return prompt_template
-
-    def invoke(self, user_query: str, data: str) -> SummarizerResponse:
-        print("summarizer invoked")
-        prompt = self.propmt_template.invoke(
-            {"user_query": user_query, "data":data}
-        )
-        output = self.model.invoke(prompt)
-        print("Summarizer Response:\n", output, "\n\n")
-        return output
 
 
 class MainAgent:

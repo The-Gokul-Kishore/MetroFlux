@@ -12,9 +12,9 @@ from metroflux.services.agent_services.agent_schemas import (
     , FinalResponse
 
 )
-from metroflux.services.agent_services.main_agent import SummarizerAgent, DateAgent, RouterAgent
-from metroflux.services.agent_services.location_service import LocationService
-from metroflux.services.agent_services.graph_agent import GraphAgent
+from metroflux.services.agent_services.agents import SummarizerAgent, DateAgent, RouterAgent, GraphAgent
+from metroflux.services.location_service import LocationService
+
 
 
 class AgentExecuter:

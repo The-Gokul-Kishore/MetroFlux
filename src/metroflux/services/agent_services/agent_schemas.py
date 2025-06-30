@@ -1,18 +1,6 @@
 from pydantic import BaseModel,Field
-from typing import Annotated, List, Literal
+from typing import Annotated,  Literal
 from datetime import date
-class AgentState(BaseModel):
-    route: str
-    corrdinates: List[int]
-    location_based: bool
-    data: str
-    user_query: str
-    is_graph_needed: bool
-    graph_instructions: str
-    graph_json: str
-    output_text: str
-    retry_count: int
-
 
 
 

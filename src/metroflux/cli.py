@@ -40,6 +40,12 @@ def run_frontend(
     print(f"Running frontend at {frontend_dir} with command: {' '.join(frontend_command)}")
     run(frontend_command, cwd=frontend_dir,shell=True)
 
-
+@app.command()
+def setup_frontend():
+    from subprocess import run
+    frontend_dir = Path(__file__).resolve().parents[2] / os.getenv("FRONTEND_PATH", "frontend")
+    print(f"Installing frontend dependencies at {frontend_dir}")
+    run("npm install", cwd=frontend_dir,shell=True)
+    
 if __name__ == "__main__":
     app()
