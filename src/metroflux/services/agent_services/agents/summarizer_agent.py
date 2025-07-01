@@ -1,5 +1,8 @@
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models.base import BaseChatModel
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.prompts import MessagesPlaceholder
+
 
 from metroflux.services.agent_services.agent_schemas import SummarizerResponse
 
@@ -11,6 +14,7 @@ class SummarizerAgent:
     ):
         self.model = model.with_structured_output(SummarizerResponse)
         self.propmt_template = self._get_prompt_template()
+        self.history = []
 
     def _get_prompt_template(self):
         prompt_template = ChatPromptTemplate(
@@ -19,8 +23,11 @@ class SummarizerAgent:
                     "system",
                     "You are a weather assistant summarizer agent use data to address user query and also graph if needed.\n"
                     "- Use the provided weather data to answer the user's query.\n"
-                    "- if no weather data provided and query is general answer in polite tone while also pushing user to ask weather related question",
+                    "- If the current query lacks some context (e.g., location, type of weather), try to infer it from the previous chat history."
+                    "- If no weather data is available, respond politely with a general message and encourage the user to ask a weather-related question."
+                    "- if no weather data provided and query is general answer in polite tone while also pushing user to ask weather related question and ask use for weather question",
                 ),
+                MessagesPlaceholder(variable_name="history"),
                 (
                     "user",
                     """User query: {user_query}
@@ -42,7 +49,11 @@ class SummarizerAgent:
 
     def invoke(self, user_query: str, data: str) -> SummarizerResponse:
         print("summarizer invoked")
-        prompt = self.propmt_template.invoke({"user_query": user_query, "data": data})
+        prompt = self.propmt_template.format_messages(
+            user_query=user_query, data=data, history=self.history
+        )
         output = self.model.invoke(prompt)
+        self.history.append(HumanMessage(content=user_query))
+        self.history.append(AIMessage(content=output.model_dump_json()))
         print("Summarizer Response:\n", output, "\n\n")
         return output

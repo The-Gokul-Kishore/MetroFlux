@@ -53,6 +53,12 @@ h2 {
   word-wrap: break-word;
   box-sizing: border-box;
 }
+.loading {
+  font-style: italic;
+  color: #888;
+  margin-bottom: 10px;
+}
+
 
 .message.user {
   background-color: #fff4cc; /* soft warm yellow */

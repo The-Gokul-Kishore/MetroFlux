@@ -24,7 +24,6 @@ class DateAgent:
                     """User query: {user_query}
                         current_date is {current_date}
                         based on the current date and user query return date ranges
-
                     """,
                 ),
             ]

@@ -10,29 +10,37 @@ class GraphAgent:
         self.prompt_template = self._get_prompt_template()
         self.code_executor = CodeExecutor()
     def _get_prompt_template(self):
-        prompt_template = ChatPromptTemplate(
-            [
-                (
-                    "system",
-                    """You are a weather visualizer.
-        You generate Python code using Plotly (and optionally pandas) to visualize weather data.
-        Your code must produce a figure stored in a variable named `fig`.
-        """,
-                ),
-                ("user", """Visualize the weather data using the following instructions:
 
-                {instructions}
+        prompt_template = ChatPromptTemplate.from_messages([
+            (
+                "system",
+                """You are a Python code generator for weather visualizations.
 
-                Constraints:
-                - The final visualization must use only Plotly.
-                - Store the final plot in a variable called `fig`.
-                - The `fig` must be JSON-serializable using `pio.to_json(fig)`.
-                - Do not include file saving or display (`.show()`) in your output.
-                - Output only Python code — no explanations or markdown.
-                """)
-                ,
-            ]
-        )
+        Your job is to:
+        - Generate valid Python code using Plotly (and optionally pandas) to visualize the data.
+        - Always assign the final plot to a variable named `fig`.
+
+        Constraints:
+        - The final output must be **pure Python code**, not JSON or explanations.
+        - The variable `fig` must be defined, as it will be serialized using `plotly.io.to_json(fig)`.
+        - Do not include `.show()`, `print()`, or any text output — just the code.
+        - Do NOT output raw JSON. Always generate Python code using `plotly.graph_objects` or `plotly.express`.
+
+        Only output valid Python code. No markdown, comments, or text outside code."""
+            ),
+            (
+                "user",
+                """Visualize the weather data using the following instructions:
+
+        {instructions}
+
+        Make sure:
+        - You create a variable named `fig` with the final Plotly graph object.
+        - Use only Plotly.
+        - Return only valid Python code."""
+            )
+        ])
+
         return prompt_template
 
     def exec_and_validate(self, code):

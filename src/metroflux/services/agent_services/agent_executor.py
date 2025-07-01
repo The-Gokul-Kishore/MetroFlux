@@ -37,7 +37,7 @@ class AgentExecuter:
         if router_response.location_based:
             location = self.location_service.get_coordinates_from_location(router_response.location)
             if location is None:
-                raise Exception("Location resolution failed.")
+                return FinalResponse(summary="location not found",is_graph_needed=False,graph_json='')
             lat, lon = location
         else:
             lat = lon = None
@@ -47,8 +47,8 @@ class AgentExecuter:
             summarizer_response:SummarizerResponse = self.summarizer_agent.invoke(user_query=user_query,data="none")
             return FinalResponse(summary=summarizer_response.summary,is_graph_needed=summarizer_response.is_graph_needed,graph_json='')
         if router_response.route =="weather_current":
-            tool_func = self.tool_map[router_response.route]
-            data = tool_func(user_query, lat, lon)
+            tool_func = self.tool_map["weather_summary"]
+            data = tool_func(lat, lon)
         else:
             today = date.today()
             date_response:DateResponse = self.date_agent.invoke(user_query=user_query,current_date =today)

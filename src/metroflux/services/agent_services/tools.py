@@ -75,18 +75,14 @@ def weather_summary(
     result = {}
     today = date.today()
 
-    # Case 1: No dates → current only
     if not start_date and not end_date:
         result["current"] = _weather_current(lat, lon)
         return result
-
-    # Case 2: Future only
     if start_date and start_date >= today:
         future_days = (end_date - start_date).days + 1 if end_date else 7
         future_days = min(future_days, 16)  # Max limit
         result["future"] = _weather_future(lat, lon, days=future_days)
 
-    # Case 3: Past only
     if end_date and end_date < today:
         hist_start = start_date if start_date else today
         hist_end = end_date
@@ -94,13 +90,10 @@ def weather_summary(
             lat, lon, start_date=hist_start.isoformat(), end_date=hist_end.isoformat()
         )
 
-    # Case 4: Spanning today
     if start_date and end_date and start_date < today and end_date > today:
-        # Past: from start to today
         result["past"] = _weather_past(
             lat, lon, start_date=start_date.isoformat(), end_date=today.isoformat()
         )
-        # Future: from tomorrow to end_date
         future_days = min((end_date - today).days, 16)
         result["future"] = _weather_future(lat, lon, days=future_days)
 

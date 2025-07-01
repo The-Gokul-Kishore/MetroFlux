@@ -10,9 +10,17 @@ function App(){
     useEffect(() => {
     window.dispatchEvent(new Event('resize'))
   }, [messages])
+  useEffect(() => {
+  const saved = localStorage.getItem('chatMessages')
+  if (saved) setMessages(JSON.parse(saved))
+}, [])
+useEffect(() => {
+  localStorage.setItem('chatMessages', JSON.stringify(messages))
+}, [messages])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     if (!query.trim()) return
     const usermessage = {role: 'user', content: query}
     setMessages((prev) => [...prev, usermessage])
@@ -33,6 +41,8 @@ function App(){
         ...prev,
         { role: 'bot', content: 'Error calling API: ' + err.message },
       ])
+    }finally{
+      setLoading(false)
     }
 
 }  
@@ -54,10 +64,14 @@ return (
           config={{ responsive: true }}
           style={{ width: '100%', height: '100%' }}
         />
+
       </div>
+
       )}
     </div>
         ))}
+       {loading && <div className="loading">Loading response...</div>}
+ 
       </div>
       <form onSubmit={handleSubmit} className="input-area">
         <input
